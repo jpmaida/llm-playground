@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from client_groq import generate_answer, load_llm
 from utils import format_res
+import prompt_templates
 
 load_dotenv()
 
@@ -24,13 +25,25 @@ with tab1:
         ["qwen/qwen3-32b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
     )
     temperature = st.slider("Temperature:", min_value=0.0, max_value=1.0, value=0.7, step=0.1, width=200)
-    prompt = st.text_area("Enter your prompt here:")
+    
+    is_system_prompt = st.checkbox("Add System Prompt?")
+    
+    system_prompt = ""
+    if is_system_prompt:
+        system_prompt = st.text_area("Enter your System Prompt here:", value=prompt_templates.YODA_SYSTEM_PROMPT.strip())
+    else:
+        system_prompt = ""
+    
+    user_prompt = st.text_area("Enter your prompt here:")
 
     if st.button("Generate Answer"):
-        if prompt is not None and prompt.strip() != "":
+        if user_prompt is not None and user_prompt.strip() != "":
             with st.spinner("Generating answer..."):
                 llm = load_llm(model, temperature)
-                answer, content = generate_answer(llm, prompt)
+                if system_prompt.strip() == "":
+                    answer, content = generate_answer(llm, user_prompt)
+                else:
+                    answer, content = generate_answer(llm, system_prompt.format(pergunta=user_prompt))
                 st.caption("Answer:")
                 st.markdown(format_res(content))
 
@@ -39,6 +52,25 @@ with tab1:
                 st.subheader("Developer Tools")
 
                 with st.expander("View Complete Answer", expanded=True):
+                    col1_final_prompt, col2_final_prompt = st.columns([0.1, 0.9])
+                    with col1_final_prompt:
+                        st.caption("Final Prompt:")
+                    with col2_final_prompt:
+                        if system_prompt.strip() == "":
+                            st.markdown("_Your Prompt_: {prompt}".format(prompt=user_prompt))
+                        else:
+                            col1_system_prompt, col2_system_prompt = st.columns([0.1, 0.9])
+                            with col1_system_prompt:
+                                st.caption("System Prompt:")
+                            with col2_system_prompt:
+                                st.markdown(system_prompt)
+
+                            col1_user_prompt, col2_user_prompt = st.columns([0.1, 0.9])
+                            with col1_user_prompt:
+                                st.caption("User Prompt:")
+                            with col2_user_prompt:
+                                st.markdown(user_prompt)
+                    
                     col1_content, col2_content = st.columns([0.1, 0.9])
                     with col1_content:
                         st.caption("Raw Content:")
