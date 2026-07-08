@@ -17,20 +17,20 @@ def embed(text) -> list[float]:
     return embedding_model.embed_query(text)
 
 knowledge = {
-    "Luke Skywalker": embed("Luke Skywalker"),
-    "Yoda": embed("Yoda"),
-    "Obi-Wan Kenobi": embed("Obi-Wan Kenobi"),
-    "Leia Organa": embed("Leia Organa"),
-    "Darth Vader": embed("Darth Vader"),
-    "Death Star": embed("Death Star"),
-    "Millennium Falcon": embed("Millennium Falcon"),
-    "Tatooine": embed("Tatooine"),
-    "Jedi": embed("Jedi"),
-    "Sith": embed("Sith"),
-    "Pizza": embed("Pizza"),
-    "Linux": embed("Linux"),
-    "Kubernetes": embed("Kubernetes"),
-    "Red Hat": embed("Red Hat")
+    "Luke Skywalker": embed("Luke Skywalker é um Jedi treinado por Obi-Wan Kenobi e Yoda."),
+    "Yoda": embed("Yoda é um Mestre Jedi que treinou Luke Skywalker e outros Jedi."),
+    "Obi-Wan Kenobi": embed("Obi-Wan Kenobi é um Mestre Jedi que treinou Luke Skywalker e Anakin Skywalker."),
+    "Leia Organa": embed("Leia Organa é uma líder da Aliança Rebelde, irmã de Luke Skywalker."),
+    "Darth Vader": embed("Darth Vader é um Lorde Sith e pai de Luke Skywalker. Ele era Anakin Skywalker."),
+    "Death Star": embed("Death Star é uma estação espacial destrutiva do Império Galáctico."),
+    "Millennium Falcon": embed("Millennium Falcon é uma nave espacial usada pela Aliança Rebelde."),
+    "Tatooine": embed("Tatooine é um planeta do universo de Star Wars, foi o lar de Luke Skywalker e Anakin Skywalker."),
+    "Jedi": embed("Jedi é um membro da ordem jedi."),
+    "Sith": embed("Sith é um membro da ordem sith."),
+    "Pizza": embed("Pizza é um prato tradicional italiano feito com massa, molho de tomate e queijo."),
+    "Linux": embed("Linux é um sistema operacional de código aberto."),
+    "Kubernetes": embed("Kubernetes é uma plataforma de orquestração de contêineres."),
+    "Red Hat": embed("Red Hat é uma empresa de software livre.")
 }
 
 def search(embedded_query: list[float], top_k: int = 5):
@@ -87,5 +87,9 @@ def display_similarities(embedded_query: list[float], query_as_text: str):
     )
 
     fig.update_traces(textposition="top center")
+    fig.update_layout(
+        xaxis_title="PCA Component 1",
+        yaxis_title="PCA Component 2"
+    )
 
     return fig
