@@ -1,11 +1,12 @@
 import time
 
 import streamlit as st
-
+import pandas as pd
 from dotenv import load_dotenv
 
 from client_groq import generate_answer, load_llm
 from utils import format_res
+from semantic_search import embed, search, display_similarities
 import prompt_templates
 
 load_dotenv()
@@ -13,7 +14,7 @@ load_dotenv()
 st.set_page_config(layout="wide", page_icon="🤖", page_title="LLM Playground")
 st.title("LLM Playground: Building AI Systems Without Magic")
 
-tab1, tab2, tab3 = st.tabs(["Playground", "Embeddings", "RAG"])
+tab1, tab2, tab3 = st.tabs(["Playground 🎮", "Semantic Search (Embeddings) 🔍", "RAG"])
 
 with tab1:
     provider = st.radio(
@@ -108,3 +109,22 @@ with tab1:
                         st.json(answer.usage_metadata, expanded=True)
         else:
             st.toast("Please enter a prompt before generating an answer.", icon="⚠️")
+
+with tab2:
+    st.radio(
+        "Choose your model:",
+        ["BAAI/bge-m3"]
+    )
+    query = st.text_input("What are you looking for?", placeholder="Type your query here...")
+    if st.button("Search"):
+        if query is not None and query.strip() != "":
+            embedded_query = embed(query)
+            results = search(embedded_query, top_k=None)
+            similarity_results = display_similarities(embedded_query, query)
+
+            st.caption("Results:")
+            df = pd.DataFrame(results, columns=["Item", "Similarity Score"])
+            st.table(data=df, width="content")
+            st.plotly_chart(similarity_results, width="stretch")
+        else:
+            st.toast("Please enter a query before searching.", icon="⚠️")
