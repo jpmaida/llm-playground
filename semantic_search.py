@@ -72,8 +72,6 @@ def display_similarities(embedded_query: list[float], query_as_text: str):
     })
 
     df = pd.concat([df_knowledge_base, df_query], ignore_index=True)
-    df["size"] = 1
-    df.loc[df["type"] == "Query", "size"] = 2
 
     fig = px.scatter(
         df,
@@ -81,7 +79,6 @@ def display_similarities(embedded_query: list[float], query_as_text: str):
         y="y",
         text="label",
         color="type",
-        size="size",
         title="Embedding Space (PCA)",
         color_discrete_map={
             "Knowledge Base": "royalblue",
