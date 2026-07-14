@@ -1,5 +1,3 @@
-import time
-
 import streamlit as st
 import pandas as pd
 from dotenv import load_dotenv
@@ -7,6 +5,8 @@ from dotenv import load_dotenv
 from client_groq import generate_answer, load_llm
 from utils import format_res
 from semantic_search import embed, search, display_similarities
+from knowledge_explorer import knowledge_explorer
+from rag import rag_chain
 import prompt_templates
 
 load_dotenv()
@@ -128,3 +128,56 @@ with tab2:
             st.plotly_chart(similarity_results, width="stretch")
         else:
             st.toast("Please enter a query before searching.", icon="⚠️")
+
+with tab3:
+    pipeline_dot = """
+    digraph G {
+        rankdir=LR; # Left-to-Right orientation
+        node [shape=box, style="filled,rounded", color="#1f77b4", fontcolor=white, fontname="Helvetica", fontsize="12pt"];
+        
+        # Define Nodes
+        A [label="📄 Documents", fillcolor="#1f77b4"];
+        B [label="✂️ Chunking", fillcolor="#1f77b4"];
+        C [label="🧠 Embeddings", fillcolor="#1f77b4"];
+        D [label="🗄️ Vector Store", fillcolor="#1f77b4"];
+        E [label="🔍 Retrieval", fillcolor="#1f77b4"];
+        F [label="🤖 LLM", fillcolor="#1f77b4"];
+        G [label="💬 Answer", fillcolor="#1f77b4"];
+        
+        # Define Pipeline Connections
+        A -> B;
+        B -> C;
+        C -> D;
+        D -> E;
+        E -> F;
+        F -> G;
+    }
+    """
+
+    # Render the diagram inside your app
+    st.graphviz_chart(pipeline_dot)
+    tab_knowledge_base, tab_retrieval, tab_devtools = st.tabs(["Knowledge Base", "Retrieval", "Developer Tools"])
+    with tab_knowledge_base:
+        knowledge_explorer()
+    with tab_retrieval:
+        question = st.text_input("Make your question and I will answer:", placeholder="Type your question here...")
+        on_off = st.toggle("Dev Tools")
+        
+        if on_off:
+            chunk_size = st.slider("Chunk size:", min_value=100, max_value=1000, value=100, step=50, width=200)
+        
+        if st.button("Search", key="question_btn"):
+            if question is not None and question.strip() != "":
+                print("Searching for question:", question)
+                with st.spinner("Generating answer..."):
+                    response = rag_chain(question)
+                    st.caption("Retrieved chunks:")
+                    retrieved_chunks = response["context"]
+                    for chunk in retrieved_chunks:
+                        filename = chunk.metadata.get('source')
+                        with st.expander(label=filename, expanded=False):
+                            st.markdown(chunk.page_content)
+                    st.caption("Answer:")
+                    st.markdown(response['answer'])
+            else:
+                st.toast("Please enter a question before searching.", icon="⚠️")
