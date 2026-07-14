@@ -6,7 +6,7 @@ from client_groq import generate_answer, load_llm
 from utils import format_res
 from semantic_search import embed, search, display_similarities
 from knowledge_explorer import knowledge_explorer
-from rag import rag_chain
+from rag_langchain import rag_chain
 import prompt_templates
 
 load_dotenv()
