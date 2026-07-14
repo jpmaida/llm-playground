@@ -156,7 +156,7 @@ with tab3:
 
     # Render the diagram inside your app
     st.graphviz_chart(pipeline_dot)
-    tab_knowledge_base, tab_retrieval, tab_devtools = st.tabs(["Knowledge Base", "Retrieval", "Developer Tools"])
+    tab_knowledge_base, tab_retrieval = st.tabs(["Knowledge Base", "Retrieval"])
     with tab_knowledge_base:
         knowledge_explorer()
     with tab_retrieval:
@@ -169,15 +169,16 @@ with tab3:
                 is_vectors = st.toggle("Show vectors ?")
                 chunk_size = st.slider("Chunk size:", min_value=100, max_value=1000, value=100, step=50, width=200)
                 top_k = st.slider("Top K:", min_value=3, max_value=10, value=3, step=1, width=200)
+                temperature = st.slider("Temperature:", min_value=0.1, max_value=1.0, value=0.7, step=0.1, width=200)
                 is_reasoning = st.toggle("Show reasoning ?")
         
         if st.button("Search", key="question_btn"):
             st.divider()  # Creates the horizontal line
             if question is not None and question.strip() != "":
                 with st.spinner("Generating answer..."):
-                    response, retrieved_chunks = rag_pipeline(question)
-                    
                     if is_dev_tools:
+                        response, retrieved_chunks = rag_pipeline(question, top_k=top_k, chunk_size=chunk_size, temperature=temperature)
+                        
                         if is_retrieved_chunks:
                             st.caption("Retrieved chunks:")
                             for chunk in retrieved_chunks:
@@ -200,13 +201,17 @@ with tab3:
                         with col1_overlap:
                             st.caption("Chunk overlap:")
                         with col2_overlap:
-                            st.markdown("20% of " + str(chunk_size) + " = " + str((20/chunk_size)*100))
+                            st.markdown("20% of " + str(chunk_size) + " = " + str(int(chunk_size*0.2)))
 
                         if is_reasoning:
                             st.caption("Thinking:")
                             st.markdown(extract_thinking(response.content))
 
-                    st.caption("Answer:")
-                    st.markdown(format_res(response.content, return_thinking=False))
+                        st.caption("Answer:")
+                        st.markdown(format_res(response.content, return_thinking=False))
+                    else:
+                        response, retrieved_chunks = rag_pipeline(question)
+                        st.caption("Answer:")
+                        st.markdown(format_res(response.content, return_thinking=False))
             else:
                 st.toast("Please enter a question before searching.", icon="⚠️")
