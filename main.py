@@ -3,10 +3,10 @@ import pandas as pd
 from dotenv import load_dotenv
 
 from client_groq import generate_answer, load_llm
-from utils import format_res
+from utils import format_res, extract_thinking
 from semantic_search import embed, search, display_similarities
 from knowledge_explorer import knowledge_explorer
-from rag_langchain import rag_chain
+from rag import rag_pipeline
 import prompt_templates
 
 load_dotenv()
@@ -161,23 +161,52 @@ with tab3:
         knowledge_explorer()
     with tab_retrieval:
         question = st.text_input("Make your question and I will answer:", placeholder="Type your question here...")
-        on_off = st.toggle("Dev Tools")
+        is_dev_tools = st.toggle("Dev Tools")
         
-        if on_off:
-            chunk_size = st.slider("Chunk size:", min_value=100, max_value=1000, value=100, step=50, width=200)
+        if is_dev_tools:
+            with st.container(border=True):
+                is_retrieved_chunks = st.toggle("Show retrieved chunks ?")
+                is_vectors = st.toggle("Show vectors ?")
+                chunk_size = st.slider("Chunk size:", min_value=100, max_value=1000, value=100, step=50, width=200)
+                top_k = st.slider("Top K:", min_value=3, max_value=10, value=3, step=1, width=200)
+                is_reasoning = st.toggle("Show reasoning ?")
         
         if st.button("Search", key="question_btn"):
+            st.divider()  # Creates the horizontal line
             if question is not None and question.strip() != "":
-                print("Searching for question:", question)
                 with st.spinner("Generating answer..."):
-                    response = rag_chain(question)
-                    st.caption("Retrieved chunks:")
-                    retrieved_chunks = response["context"]
-                    for chunk in retrieved_chunks:
-                        filename = chunk.metadata.get('source')
-                        with st.expander(label=filename, expanded=False):
-                            st.markdown(chunk.page_content)
+                    response, retrieved_chunks = rag_pipeline(question)
+                    
+                    if is_dev_tools:
+                        if is_retrieved_chunks:
+                            st.caption("Retrieved chunks:")
+                            for chunk in retrieved_chunks:
+                                content = chunk[0]
+                                score = chunk[1]
+                                filename_plus_score = content.metadata.get('source') + " - Score: " + str(score)
+                                with st.expander(label=filename_plus_score, expanded=False):
+                                    st.markdown(content.page_content)
+                                    if is_vectors:
+                                        with st.expander(label="Chunk as vector", expanded=False):
+                                            st.markdown(embed(content.page_content))
+
+                        col1_chunk, col2_chunk = st.columns([0.1, 0.9])
+                        with col1_chunk:
+                            st.caption("Chunk size:")
+                        with col2_chunk:
+                            st.markdown(chunk_size)
+                        
+                        col1_overlap, col2_overlap = st.columns([0.1, 0.9])
+                        with col1_overlap:
+                            st.caption("Chunk overlap:")
+                        with col2_overlap:
+                            st.markdown("20% of " + str(chunk_size) + " = " + str((20/chunk_size)*100))
+
+                        if is_reasoning:
+                            st.caption("Thinking:")
+                            st.markdown(extract_thinking(response.content))
+
                     st.caption("Answer:")
-                    st.markdown(response['answer'])
+                    st.markdown(format_res(response.content, return_thinking=False))
             else:
                 st.toast("Please enter a question before searching.", icon="⚠️")
