@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 from typing import Any, List, Tuple
 from client_groq import load_llm
@@ -7,9 +9,8 @@ from langchain_community.vectorstores import FAISS
 
 KNOWLEDGE_PATH = Path("knowledge")
 
-local_model_path="/home/jpmaida/.cache/huggingface/hub/models--BAAI--bge-m3/"
-def __load_embedding_model__(model: str = "BAAI/bge-m3"):
-# def __load_embedding_model__(model: str = local_model_path):
+model_path=os.getenv("EMBEDDINGS_MODEL")
+def __load_embedding_model__(model: str = model_path):
     """
         Beijing Academy of Artificial Intelligence (BAAI)
     """
