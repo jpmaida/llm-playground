@@ -18,13 +18,16 @@ def __load_embedding_model__(model: str = model_path):
 
 __embedding_model__ = __load_embedding_model__()
 
-def generate_chunks_and_metadata(chunk_size=100, chunk_overlap=20) -> list:
+def generate_chunks_and_metadata(chunk_size=100) -> list:
     docs = list(KNOWLEDGE_PATH.glob("*.md"))
     knowledge_as_text = []
     for d in docs:
         if d.is_file:
             content = d.read_text(encoding='utf-8')
             knowledge_as_text.append(content)
+    
+    # 20% for overlapping
+    chunk_overlap = chunk_size * 0.2
     
     text_splitter = RecursiveCharacterTextSplitter(
       chunk_size=chunk_size,
@@ -65,7 +68,7 @@ def search(query: str, vectorstore: FAISS, k: int = 3) -> List[Tuple[Any, float]
     query_embedding = embed_query(query=query)
     results = vectorstore.similarity_search_with_score_by_vector(
         embedding=query_embedding,
-        k=3
+        k=k
     )
     return results
 
@@ -84,12 +87,15 @@ def create_context(search_results):
 
     return context
 
-def rag_pipeline(query: str, id_model="qwen/qwen3-32b"):
-    prompt = """
+def rag_pipeline(query: str, id_model: str="qwen/qwen3-32b", top_k: int = 3, chunk_size: int = 100, temperature: float = 0.7):
+    chunks, metadatas = generate_chunks_and_metadata(chunk_size=chunk_size)
+    vectorstore = generate_database(chunks=chunks, metadatas=metadatas)
+    results = search(query, vectorstore, k=top_k)
+    context = create_context(results)
+    
+    prompt = f"""
     Você é um especialista em Star Wars.
-
     Utilize exclusivamente o contexto abaixo.
-
     Se não souber responder, informe que a informação não está presente.
 
     Contexto
@@ -100,12 +106,7 @@ def rag_pipeline(query: str, id_model="qwen/qwen3-32b"):
 
     {query}
     """
-
-    chunks, metadatas = generate_chunks_and_metadata()
-    vectorstore = generate_database(chunks=chunks, metadatas=metadatas)
-    results = search(query, vectorstore)
-    context = create_context(results)
-    context = context.format({context: context, query: query})
-    llm = load_llm(id_model=id_model)
-    response = llm.invoke(context)
+    
+    llm = load_llm(id_model=id_model, temperature=temperature)
+    response = llm.invoke(prompt)
     return response, results
