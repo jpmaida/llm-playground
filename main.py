@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from dotenv import load_dotenv
 
+import groq
 from client_groq import generate_answer, load_llm
 from utils import format_res, extract_thinking
 from semantic_search import embed, search, display_similarities
@@ -40,11 +41,23 @@ with tab1:
     if st.button("Generate Answer"):
         if user_prompt is not None and user_prompt.strip() != "":
             with st.spinner("Generating answer..."):
-                llm = load_llm(model, temperature)
-                if system_prompt.strip() == "":
-                    answer, content = generate_answer(llm, user_prompt)
-                else:
-                    answer, content = generate_answer(llm, system_prompt.format(pergunta=user_prompt))
+                try:
+                    llm = load_llm(model, temperature)
+                    if system_prompt.strip() == "":
+                        answer, content = generate_answer(llm, user_prompt)
+                    else:
+                        answer, content = generate_answer(llm, system_prompt.format(pergunta=user_prompt))
+                except groq.BadRequestError as e:
+                    st.error("""
+                             Message: {message}
+                             
+                             Stacktrace: {body}
+                            """.format(message=e.message, body=e.body), icon="🚨")
+                    st.stop()
+                except Exception as e:
+                    st.error(e, icon="🚨")
+                    st.stop()
+                
                 st.caption("Answer:")
                 st.markdown(format_res(content))
 
@@ -177,7 +190,18 @@ with tab3:
             if question is not None and question.strip() != "":
                 with st.spinner("Generating answer..."):
                     if is_dev_tools:
-                        response, retrieved_chunks = rag_pipeline(question, top_k=top_k, chunk_size=chunk_size, temperature=temperature)
+                        try:
+                            response, retrieved_chunks = rag_pipeline(question, top_k=top_k, chunk_size=chunk_size, temperature=temperature)
+                        except groq.BadRequestError as e:
+                            st.error("""
+                                    Message: {message}
+                                    
+                                    Stacktrace: {body}
+                                    """.format(message=e.message, body=e.body), icon="🚨")
+                            st.stop()
+                        except Exception as e:
+                            st.error(e, icon="🚨")
+                            st.stop()
                         
                         if is_retrieved_chunks:
                             st.caption("Retrieved chunks:")
@@ -210,7 +234,18 @@ with tab3:
                         st.caption("Answer:")
                         st.markdown(format_res(response.content, return_thinking=False))
                     else:
-                        response, retrieved_chunks = rag_pipeline(question)
+                        try:
+                            response, retrieved_chunks = rag_pipeline(question)
+                        except groq.BadRequestError as e:
+                            st.error("""
+                                    Message: {message}
+                                    
+                                    Stacktrace: {body}
+                                    """.format(message=e.message, body=e.body), icon="🚨")
+                            st.stop()
+                        except Exception as e:
+                            st.error(e, icon="🚨")
+                            st.stop()
                         st.caption("Answer:")
                         st.markdown(format_res(response.content, return_thinking=False))
             else:
