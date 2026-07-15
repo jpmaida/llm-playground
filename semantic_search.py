@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from sklearn.metrics.pairwise import cosine_similarity
@@ -6,6 +7,8 @@ from sklearn.decomposition import PCA
 import numpy as np
 import pandas as pd
 import plotly.express as px
+
+load_dotenv()
 
 model_path=os.getenv("EMBEDDINGS_MODEL")
 def __load_embedding_model__(model: str = model_path):
