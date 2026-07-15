@@ -1,13 +1,14 @@
 import os
+from dotenv import load_dotenv
 
 from pathlib import Path
 from typing import Any, List, Tuple
-from client_groq import load_llm
+from client_groq import load_llm, generate_answer
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 
-KNOWLEDGE_PATH = Path("knowledge")
+load_dotenv()
 
 model_path=os.getenv("EMBEDDINGS_MODEL")
 def __load_embedding_model__(model: str = model_path):
@@ -19,6 +20,7 @@ def __load_embedding_model__(model: str = model_path):
 __embedding_model__ = __load_embedding_model__()
 
 def generate_chunks_and_metadata(chunk_size=100) -> list:
+    KNOWLEDGE_PATH = Path("knowledge")
     docs = list(KNOWLEDGE_PATH.glob("*.md"))
     knowledge_as_text = []
     for d in docs:
@@ -93,7 +95,7 @@ def rag_pipeline(query: str, id_model: str="qwen/qwen3-32b", top_k: int = 3, chu
     results = search(query, vectorstore, k=top_k)
     context = create_context(results)
     
-    prompt = f"""
+    prompt = """
     Você é um especialista em Star Wars.
     Utilize exclusivamente o contexto abaixo.
     Se não souber responder, informe que a informação não está presente.
@@ -108,5 +110,5 @@ def rag_pipeline(query: str, id_model: str="qwen/qwen3-32b", top_k: int = 3, chu
     """
     
     llm = load_llm(id_model=id_model, temperature=temperature)
-    response = llm.invoke(prompt)
+    response, response_content = generate_answer(llm, prompt=prompt.format(context=context, query=query))
     return response, results
