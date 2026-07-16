@@ -4,11 +4,12 @@ from dotenv import load_dotenv
 
 import groq
 from client_groq import generate_answer, load_llm
+import help_ui
+import prompt_templates
 from utils import format_res, extract_thinking
 from semantic_search import embed, search, display_similarities
 from knowledge_explorer import knowledge_explorer
 from rag import rag_pipeline
-import prompt_templates
 
 load_dotenv()
 
@@ -180,6 +181,7 @@ with tab3:
             with st.container(border=True):
                 is_retrieved_chunks = st.toggle("Show retrieved chunks ?")
                 is_vectors = st.toggle("Show vectors ?")
+                system_prompt = st.text_area(label="System prompt:", value=prompt_templates.STAR_WARS_SPECIALIST_RAG.strip(), width=500, height=300, help=help_ui.TEXTO_HELP_RAG_SYSTEM_PROMPT)
                 chunk_size = st.slider("Chunk size:", min_value=100, max_value=1000, value=100, step=50, width=200)
                 top_k = st.slider("Top K:", min_value=3, max_value=10, value=3, step=1, width=200)
                 temperature = st.slider("Temperature:", min_value=0.1, max_value=1.0, value=0.7, step=0.1, width=200)
@@ -191,7 +193,7 @@ with tab3:
                 with st.spinner("Generating answer..."):
                     if is_dev_tools:
                         try:
-                            response, retrieved_chunks = rag_pipeline(question, top_k=top_k, chunk_size=chunk_size, temperature=temperature)
+                            response, retrieved_chunks = rag_pipeline(question, top_k=top_k, chunk_size=chunk_size, temperature=temperature, system_prompt=system_prompt)
                         except groq.BadRequestError as e:
                             st.error("""
                                     Message: {message}

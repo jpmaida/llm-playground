@@ -7,6 +7,7 @@ from client_groq import load_llm, generate_answer
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
+import prompt_templates
 
 load_dotenv()
 
@@ -89,26 +90,11 @@ def create_context(search_results):
 
     return context
 
-def rag_pipeline(query: str, id_model: str="qwen/qwen3-32b", top_k: int = 3, chunk_size: int = 100, temperature: float = 0.7):
+def rag_pipeline(query: str, id_model: str="qwen/qwen3-32b", top_k: int = 3, chunk_size: int = 100, temperature: float = 0.7, system_prompt: str = prompt_templates.STAR_WARS_SPECIALIST_RAG.strip()):
     chunks, metadatas = generate_chunks_and_metadata(chunk_size=chunk_size)
     vectorstore = generate_database(chunks=chunks, metadatas=metadatas)
     results = search(query, vectorstore, k=top_k)
     context = create_context(results)
-    
-    prompt = """
-    Você é um especialista em Star Wars.
-    Utilize exclusivamente o contexto abaixo.
-    Se não souber responder, informe que a informação não está presente.
-
-    Contexto
-
-    {context}
-
-    Pergunta
-
-    {query}
-    """
-    
     llm = load_llm(id_model=id_model, temperature=temperature)
-    response, response_content = generate_answer(llm, prompt=prompt.format(context=context, query=query))
+    response, response_content = generate_answer(llm, prompt=system_prompt.format(context=context, query=query))
     return response, results
