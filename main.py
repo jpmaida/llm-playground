@@ -33,7 +33,7 @@ with tab1:
     
     system_prompt = ""
     if is_system_prompt:
-        system_prompt = st.text_area("Enter your System Prompt here:", value=prompt_templates.YODA_SYSTEM_PROMPT.strip())
+        system_prompt = st.text_area("Enter your System Prompt here:", value=prompt_templates.YODA_SYSTEM_PROMPT.strip(), width=500, height=200, help=help_ui.TEXTO_HELP_PLAYGROUND_SYSTEM_PROMPT.strip())
     else:
         system_prompt = ""
     
