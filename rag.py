@@ -57,13 +57,18 @@ def embed_query(query: str) -> list[float]:
     return __embedding_model__.embed_query(text=query)
 
 def generate_database(chunks: list[str], metadatas: list[str], k: int = 3, fetch_k: int = 4) -> FAISS:
-    vectorstore = FAISS.from_texts(
-        texts=chunks, 
-        embedding=__embedding_model__, 
-        metadatas=metadatas
-    )
+    vectorstore: FAISS = None
 
-    vectorstore.save_local('database/index_faiss')
+    if os.path.isdir(os.getenv("DATABASE_PATH")):
+        vectorstore = FAISS.load_local(os.getenv("DATABASE_PATH"), __embedding_model__, allow_dangerous_deserialization=True)
+    else :
+        vectorstore = FAISS.from_texts(
+            texts=chunks, 
+            embedding=__embedding_model__, 
+            metadatas=metadatas
+        )
+
+        vectorstore.save_local('database/index_faiss')
 
     return vectorstore
 
