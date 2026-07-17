@@ -219,3 +219,5 @@ __marimo__/
 
 # VSCode
 .vscode/
+
+database/
