@@ -51,36 +51,6 @@ def generate_chunks_and_metadata(chunk_size=100) -> list:
     
     return chunks, metadatas
 
-def embed_knowledge(chunks: list[str]) -> list[list[float]]:
-    return __embedding_model__.embed_documents(chunks)
-
-def embed_query(query: str) -> list[float]:
-    return __embedding_model__.embed_query(text=query)
-
-def generate_database(chunks: list[str], metadatas: list[str], k: int = 3, fetch_k: int = 4) -> FAISS:
-    vectorstore: FAISS = None
-
-    if os.path.isdir(os.getenv("DATABASE_PATH")):
-        vectorstore = FAISS.load_local(os.getenv("DATABASE_PATH"), __embedding_model__, allow_dangerous_deserialization=True)
-    else :
-        vectorstore = FAISS.from_texts(
-            texts=chunks, 
-            embedding=__embedding_model__, 
-            metadatas=metadatas
-        )
-
-        vectorstore.save_local('database/index_faiss')
-
-    return vectorstore
-
-def search(query: str, vectorstore: FAISS, k: int = 3) -> List[Tuple[Any, float]]:
-    query_embedding = embed_query(query=query)
-    results = vectorstore.similarity_search_with_score_by_vector(
-        embedding=query_embedding,
-        k=k
-    )
-    return results
-
 def create_context(search_results):
     context = ""
 
@@ -101,12 +71,10 @@ def create_context(search_results):
 def rag_pipeline(query: str, id_model: str="qwen/qwen3.6-27b", top_k: int = 3, chunk_size: int = 100, temperature: float = 0.7, system_prompt: str = prompt_templates.STAR_WARS_SPECIALIST_RAG.strip()):
     chunks, metadatas = generate_chunks_and_metadata(chunk_size=chunk_size)
     
-    # vectorstore = generate_database(chunks=chunks, metadatas=metadatas)
     db = VectorDatabase(embedding_model=__embedding_model__)
     vectorstore = db.build_vectorstore(chunks=chunks, metadatas=metadatas)
     
-    # results = search(query, vectorstore, k=top_k)
-    results = db.search(vectorstore, query=query, k=top_k)
+    results = db.search(vectorstore, query=query, top_k=top_k)
 
     context = create_context(results)
     llm = load_llm(id_model=id_model, temperature=temperature)

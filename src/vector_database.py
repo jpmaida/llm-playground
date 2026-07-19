@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Any
 from langchain_core.documents import Document
 from dotenv import load_dotenv
 import os
@@ -20,7 +21,7 @@ class VectorDatabase:
         # model=os.getenv("EMBEDDINGS_MODEL")
         self.__embedding_model__ = embedding_model
 
-    def build_documents(self, chunks, metadatas):
+    def __build_documents__(self, chunks, metadatas):
         return [
             Document(
                 page_content=chunk,
@@ -29,7 +30,7 @@ class VectorDatabase:
             for chunk, metadata in zip(chunks, metadatas)
         ]
 
-    def build_embeddings(self, chunks):
+    def __build_embeddings__(self, chunks):
         embeddings = self.__embedding_model__.embed_documents(chunks)
     
         return np.asarray(
@@ -37,7 +38,7 @@ class VectorDatabase:
             dtype=np.float32
         )
 
-    def build_index(self, embeddings, metric=Metric.L2):
+    def __build_index__(self, embeddings, metric=Metric.L2):
         vectors = embeddings.copy()
         dimension = vectors.shape[1]
 
@@ -51,7 +52,7 @@ class VectorDatabase:
 
         return index
 
-    def build_docstore(self, documents):
+    def __build_docstore__(self, documents):
         ids = [
             str(uuid.uuid4())
             for _ in documents
@@ -72,31 +73,37 @@ class VectorDatabase:
         return docstore, mapping
 
     def build_vectorstore(self, chunks: list[str], metadatas: list[str], metric: Metric = Metric.L2) -> FAISS:
-        documents = self.build_documents(chunks, metadatas)
+        documents = self.__build_documents__(chunks, metadatas)
 
-        embeddings = self.build_embeddings(
+        embeddings = self.__build_embeddings__(
             chunks
         )
 
-        index = self.build_index(
+        index = self.__build_index__(
             embeddings,
             metric
         )
 
-        docstore, mapping = self.build_docstore(
+        docstore, mapping = self.__build_docstore__(
             documents
         )
 
-        vectorstore = FAISS(
-            embedding_function=self.__embedding_model__,
-            index=index,
-            docstore=docstore,
-            index_to_docstore_id=mapping
-        )
+        database_path = os.getenv("DATABASE_PATH") + "/" + metric.value
+
+        if os.path.isdir(database_path):
+            vectorstore = FAISS.load_local(database_path, self.__embedding_model__, allow_dangerous_deserialization=True)
+        else :
+            vectorstore = FAISS(
+                embedding_function=self.__embedding_model__,
+                index=index,
+                docstore=docstore,
+                index_to_docstore_id=mapping
+            )
+            vectorstore.save_local(database_path)
 
         return vectorstore
     
-    def search(self, vectorstore, query: str, metric=Metric.L2, k=3):
+    def search(self, vectorstore: FAISS, query: str, metric=Metric.L2, top_k=3) -> Any:
         query_embedding = self.__embedding_model__.embed_query(query)
         
         query = np.asarray(
@@ -109,7 +116,7 @@ class VectorDatabase:
 
         scores, indexes = vectorstore.index.search(
             query,
-            k
+            top_k
         )
 
         results = []
