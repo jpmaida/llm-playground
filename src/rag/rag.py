@@ -3,12 +3,12 @@ from dotenv import load_dotenv
 
 from pathlib import Path
 from typing import Any, List, Tuple
-from client_groq import load_llm, generate_answer
+from src.llm.client_groq import load_llm, generate_answer
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-import prompt_templates
-from src.vector_database import VectorDatabase, Metric
+import src.prompts.prompt_templates as prompt_templates
+from src.db.vector_database import VectorDatabase, Metric
 
 load_dotenv()
 

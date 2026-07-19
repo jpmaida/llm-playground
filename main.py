@@ -3,14 +3,14 @@ import pandas as pd
 from dotenv import load_dotenv
 
 import groq
-from client_groq import generate_answer, load_llm
-import help_ui
-import prompt_templates
-from utils import format_res, extract_thinking
-from semantic_search import embed, search, display_similarities
-from knowledge_explorer import knowledge_explorer
-from rag import rag_pipeline
-from src.vector_database import Metric
+from src.llm.client_groq import generate_answer, load_llm
+import src.ui.help_ui as help_ui
+import src.prompts.prompt_templates as prompt_templates
+from src.llm.utils import format_res, extract_thinking
+from src.db.semantic_search import embed, search, display_similarities
+from src.ui.knowledge_explorer import knowledge_explorer
+from src.rag.rag import rag_pipeline
+from src.db.vector_database import Metric
 
 load_dotenv()
 
