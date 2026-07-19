@@ -42,7 +42,7 @@ class VectorDatabase:
         vectors = embeddings.copy()
         dimension = vectors.shape[1]
 
-        if metric == "IP":
+        if metric == Metric.IP:
             faiss.normalize_L2(vectors)
             index = faiss.IndexFlatIP(dimension)
         else:
