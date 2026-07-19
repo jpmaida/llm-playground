@@ -4,6 +4,8 @@
 
 Nave pilotada por Han Solo.
 
+Han Solo é dono da Millennium Falcon.
+
 Posteriormente utilizada por Luke Skywalker e Leia Organa.
 
 É considerada uma das naves mais rápidas da galáxia.
