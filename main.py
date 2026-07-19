@@ -26,7 +26,8 @@ with tab1:
     )
     model = st.radio(
         "Choose your model:",
-        ["qwen/qwen3.6-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
+        ["qwen/qwen3.6-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"],
+        key="llm_playground"
     )
     temperature = st.slider("Temperature:", min_value=0.0, max_value=1.0, value=0.7, step=0.1, width=200)
     
@@ -201,6 +202,11 @@ with tab3:
                     metric = st.radio(label="Metric:", options=["L2", "IP"], captions=["Euclidian Distance", "Inner Product"])
                 with col2_llm_answer:
                     st.markdown("**LLM + Answer**") 
+                    llm = st.radio(
+                        "Choose your model:",
+                        ["qwen/qwen3.6-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"],
+                        key="llm_rag"
+                    )
                     system_prompt = st.text_area(label="System prompt:", value=prompt_templates.STAR_WARS_SPECIALIST_RAG.strip(), width=500, height=300, help=help_ui.TEXTO_HELP_RAG_SYSTEM_PROMPT)
                     temperature = st.slider("Temperature:", min_value=0.1, max_value=1.0, value=0.7, step=0.1, width=200)
                     is_reasoning = st.toggle("Show reasoning ?")
@@ -212,7 +218,8 @@ with tab3:
                     if is_dev_tools:
                         try:
                             m = Metric.L2 if metric == Metric.L2.value else Metric.IP
-                            response, retrieved_chunks = rag_pipeline(question, 
+                            response, retrieved_chunks = rag_pipeline(query=question, 
+                                                                    id_model=llm,
                                                                     top_k=top_k, 
                                                                     chunk_size=chunk_size, 
                                                                     temperature=temperature, 
