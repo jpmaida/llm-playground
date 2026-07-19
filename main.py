@@ -17,7 +17,7 @@ load_dotenv()
 st.set_page_config(layout="wide", page_icon="🤖", page_title="LLM Playground")
 st.title("LLM Playground: Building AI Systems Without Magic")
 
-tab1, tab2, tab3 = st.tabs(["Playground 🎮", "Semantic Search (Embeddings) 🔍", "RAG"])
+tab1, tab2, tab3 = st.tabs(["Playground 🎮", "Semantic Search (Embeddings) 🔍", "RAG 📚"])
 
 with tab1:
     provider = st.radio(

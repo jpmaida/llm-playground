@@ -22,7 +22,7 @@ def __load_embedding_model__(model: str = model_path):
 __embedding_model__ = __load_embedding_model__()
 
 def generate_chunks_and_metadata(chunk_size=100) -> list:
-    KNOWLEDGE_PATH = Path("knowledge")
+    KNOWLEDGE_PATH = Path(os.getenv("KNOWLEDGE_PATH"))
     docs = list(KNOWLEDGE_PATH.glob("*.md"))
     knowledge_as_text = []
     for d in docs:

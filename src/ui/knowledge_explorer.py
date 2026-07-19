@@ -1,7 +1,11 @@
+import os
 import streamlit as st
 from pathlib import Path
+from dotenv import load_dotenv
 
-KNOWLEDGE_PATH = Path("knowledge")
+load_dotenv()
+
+KNOWLEDGE_PATH = Path(os.getenv("KNOWLEDGE_PATH"))
 
 def knowledge_explorer():
     st.markdown("#### 📚 Knowledge Base Explorer")
