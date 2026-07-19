@@ -10,6 +10,7 @@ from utils import format_res, extract_thinking
 from semantic_search import embed, search, display_similarities
 from knowledge_explorer import knowledge_explorer
 from rag import rag_pipeline
+from src.vector_database import Metric
 
 load_dotenv()
 
@@ -25,7 +26,7 @@ with tab1:
     )
     model = st.radio(
         "Choose your model:",
-        ["qwen/qwen3-32b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
+        ["qwen/qwen3.6-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
     )
     temperature = st.slider("Temperature:", min_value=0.0, max_value=1.0, value=0.7, step=0.1, width=200)
     
@@ -179,13 +180,30 @@ with tab3:
         
         if is_dev_tools:
             with st.container(border=True):
-                is_retrieved_chunks = st.toggle("Show retrieved chunks ?")
-                is_vectors = st.toggle("Show vectors ?")
-                system_prompt = st.text_area(label="System prompt:", value=prompt_templates.STAR_WARS_SPECIALIST_RAG.strip(), width=500, height=300, help=help_ui.TEXTO_HELP_RAG_SYSTEM_PROMPT)
-                chunk_size = st.slider("Chunk size:", min_value=100, max_value=1000, value=100, step=50, width=200)
-                top_k = st.slider("Top K:", min_value=3, max_value=10, value=3, step=1, width=200)
-                temperature = st.slider("Temperature:", min_value=0.1, max_value=1.0, value=0.7, step=0.1, width=200)
-                is_reasoning = st.toggle("Show reasoning ?")
+                col1_chunking, col2_embeddings, col3_0 = st.columns([0.3,0.3,0.4])
+                with col1_chunking:
+                    st.markdown("**Chunking**") 
+                    is_retrieved_chunks = st.toggle("Show retrieved chunks ?")
+                    chunk_size = st.slider("Chunk size:", min_value=100, max_value=1000, value=100, step=50, width=200)
+                
+                with col2_embeddings:
+                    st.markdown("**Embeddings**") 
+                    is_vectors = st.toggle("Show Embeddings ?")
+
+                st.divider()
+                
+                col1_vs_retrieval, col2_llm_answer, col3_1 = st.columns([0.3,0.3,0.4])
+                with col1_vs_retrieval:
+                    st.markdown("**Vector Store + Retrieval**") 
+                    top_k = st.slider("Top-K:", min_value=3, max_value=10, value=3, step=1, width=200)
+                    st.caption("Vector Store:")
+                    st.markdown("FAISS")
+                    metric = st.radio(label="Metric:", options=["L2", "IP"], captions=["Euclidian Distance", "Inner Product"])
+                with col2_llm_answer:
+                    st.markdown("**LLM + Answer**") 
+                    system_prompt = st.text_area(label="System prompt:", value=prompt_templates.STAR_WARS_SPECIALIST_RAG.strip(), width=500, height=300, help=help_ui.TEXTO_HELP_RAG_SYSTEM_PROMPT)
+                    temperature = st.slider("Temperature:", min_value=0.1, max_value=1.0, value=0.7, step=0.1, width=200)
+                    is_reasoning = st.toggle("Show reasoning ?")
         
         if st.button("Search", key="question_btn"):
             st.divider()  # Creates the horizontal line
@@ -193,7 +211,13 @@ with tab3:
                 with st.spinner("Generating answer..."):
                     if is_dev_tools:
                         try:
-                            response, retrieved_chunks = rag_pipeline(question, top_k=top_k, chunk_size=chunk_size, temperature=temperature, system_prompt=system_prompt)
+                            m = Metric.L2 if metric == Metric.L2.value else Metric.IP
+                            response, retrieved_chunks = rag_pipeline(question, 
+                                                                    top_k=top_k, 
+                                                                    chunk_size=chunk_size, 
+                                                                    temperature=temperature, 
+                                                                    system_prompt=system_prompt, 
+                                                                    metric=m)
                         except groq.BadRequestError as e:
                             st.error("""
                                     Message: {message}
@@ -208,9 +232,13 @@ with tab3:
                         if is_retrieved_chunks:
                             st.caption("Retrieved chunks:")
                             for chunk in retrieved_chunks:
-                                content = chunk[0]
-                                score = chunk[1]
-                                filename_plus_score = content.metadata.get('source') + " - Score: " + str(score)
+                                content = chunk['document']
+                                score = chunk['score']
+                                if metric == Metric.L2.value:
+                                    filename_plus_score = content.metadata.get('source') + " - Score: " + str(score)
+                                else:
+                                    filename_plus_score = content.metadata.get('source') + " - Distance: " + str(score)
+                                
                                 with st.expander(label=filename_plus_score, expanded=False):
                                     st.markdown(content.page_content)
                                     if is_vectors:
