@@ -1,4 +1,4 @@
-# LLM Playground - A Star Wars Saga
+# LLM Playground - A Star Wars Saga 🚀
 
 This repository is a Streamlit application for exploring generative AI concepts, embeddings, semantic search, and retrieval-augmented generation (RAG). The goal is to demonstrate, in a practical way, how to combine large language models, embeddings, and vector databases to answer questions based on structured documents.
 
