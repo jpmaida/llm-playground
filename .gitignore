@@ -220,4 +220,4 @@ __marimo__/
 # VSCode
 .vscode/
 
-database/
+database/index_faiss
