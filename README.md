@@ -111,7 +111,7 @@ The `.env` file should not contain real values in commits or screenshots. For sa
 ├── requirements.txt        # Python dependencies
 ├── knowledge/              # Knowledge files in Markdown
 ├── database/               # FAISS vector indexes and databases
-├── notebooks/              # Experiment notebooks
+├── learning/               # Learning notebooks where you can learn again
 ├── src/                    # Application source code
 │   ├── db/                 # Semantic search and vector database logic
 │   ├── llm/                # Model integration and response utilities
@@ -119,6 +119,14 @@ The `.env` file should not contain real values in commits or screenshots. For sa
 │   ├── rag/                # RAG pipeline
 │   └── ui/                 # Interface and help components
 ```
+
+---
+
+## Learning directory
+
+The `learning/` folder is the repository's hands-on study area. It contains notebooks designed for people who are getting familiar with the project for the first time and want to understand the concepts behind the application in a practical way.
+
+Inside `learning/notebooks/pt-br`, you will find guided exercises covering the Python environment, prompt engineering, LLM usage, embeddings, semantic search, and retrieval-augmented generation (RAG). These notebooks complement the code in the project and are intended to help you learn by doing, using simple examples tied to the Star Wars knowledge base.
 
 ---
 
@@ -283,3 +291,10 @@ Examples of files present:
 
 If you want, the next step could be to add a `.env.example` file to standardize configuration for other developers.
 
+---
+
+## Learning
+
+The learning/ folder is the repository’s hands-on study area. It contains notebooks designed for people who are getting familiar with the project for the first time and want to understand the concepts behind the application in a practical way.
+
+Inside learning/notebooks/pt-br, you will find guided exercises covering the Python environment, prompt engineering, LLM usage, embeddings, semantic search, and retrieval-augmented generation (RAG). These notebooks complement the code in the project and are intended to help you learn by doing, using simple examples tied to the Star Wars knowledge base.
