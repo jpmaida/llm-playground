@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Streamlit: Start",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "-m",
+        "streamlit",
+        "run",
+        "main.py",
+        "--server.address=0.0.0.0",
+        "--server.port=8501",
+        "--server.headless=true"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    }
+  ]
+}

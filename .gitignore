@@ -218,6 +218,9 @@ __marimo__/
 .streamlit/secrets.toml
 
 # VSCode
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
 
 database/index_faiss
