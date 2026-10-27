@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# macOS e Linux. No Windows o editor usa container-cli.cmd.
+# Escolhe o executável docker quando ele existe e, senão, o podman.
+# Alias de shell é ignorado: o Cursor e o VS Code não carregam o .zshrc.
+
+search_dirs=(
+  /usr/local/bin
+  /opt/homebrew/bin
+  /opt/podman/bin
+  "${HOME}/.local/bin"
+  /usr/bin
+  /bin
+  /Applications/Docker.app/Contents/Resources/bin
+)
+
+find_bin() {
+  local name="$1"
+  local dir
+  if command -v "$name" >/dev/null 2>&1; then
+    command -v "$name"
+    return 0
+  fi
+  for dir in "${search_dirs[@]}"; do
+    if [[ -x "$dir/$name" ]]; then
+      printf '%s\n' "$dir/$name"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if bin="$(find_bin docker)"; then
+  exec "$bin" "$@"
+fi
+if bin="$(find_bin podman)"; then
+  exec "$bin" "$@"
+fi
+
+echo "container-cli: neither docker nor podman was found." >&2
+exit 127

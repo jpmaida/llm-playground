@@ -1,0 +1,36 @@
+{
+  // Python 3.12 para quem não tem Python instalado na máquina.
+  // O mesmo arquivo sobe com Docker ou com Podman.
+  // macOS e Linux: .devcontainer/container-cli
+  // Windows: .devcontainer/container-cli.cmd
+  // Os dois escolhem Docker ou Podman. No Cursor e no VS Code, a configuração
+  // "Dev Containers: Docker Path" aponta para o arquivo do seu sistema.
+  // Abra a pasta no Cursor ou no VS Code e escolha "Reopen in Container".
+  "name": "LLM Playground",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+  "remoteUser": "vscode",
+  "forwardPorts": [8501],
+  "portsAttributes": {
+    "8501": {
+      "label": "Streamlit",
+      "onAutoForward": "notify"
+    }
+  },
+  // A imagem inclui um repositório Yarn com chave GPG desatualizada.
+  // Este projeto Python não usa Yarn; remova a fonte antes de atualizar o APT.
+  "postCreateCommand": "bash -lc 'sudo rm -f /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y --no-install-recommends graphviz && sudo rm -rf /var/lib/apt/lists/* && python -m venv .venv && .venv/bin/python -m pip install -r requirements.txt && if [ ! -f .env ]; then cp .env.example .env; fi'",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+        "python.terminal.activateEnvironment": true
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ms-toolsai.jupyter"
+      ]
+    }
+  }
+}

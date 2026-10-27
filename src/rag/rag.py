@@ -68,7 +68,14 @@ def create_context(search_results):
 
     return context
 
-def rag_pipeline(query: str, id_model: str="qwen/qwen3.6-27b", top_k: int = 3, chunk_size: int = 100, temperature: float = 0.7, system_prompt: str = prompt_templates.STAR_WARS_SPECIALIST_RAG.strip(), metric: Metric = Metric.L2):
+def rag_pipeline(query: str, 
+                 id_model: str="qwen/qwen3.8-27b", 
+                 top_k: int = 3, 
+                 chunk_size: int = 100, 
+                 temperature: float = 0.7, 
+                 system_prompt: str = prompt_templates.STAR_WARS_SPECIALIST_RAG.strip(), 
+                 metric: Metric = Metric.L2,
+                 use_system_prompt: bool = True):
     chunks, metadatas = generate_chunks_and_metadata(chunk_size=chunk_size)
     
     db = VectorDatabase(embedding_model=__embedding_model__)
