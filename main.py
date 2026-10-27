@@ -26,7 +26,7 @@ with tab1:
     )
     model = st.radio(
         "Choose your model:",
-        ["qwen/qwen3.6-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"],
+        ["qwen/qwen3.8-27b", "openai/gpt-oss-120b"],
         key="llm_playground"
     )
     temperature = st.slider("Temperature:", min_value=0.0, max_value=1.0, value=0.7, step=0.1, width=200)
@@ -204,7 +204,7 @@ with tab3:
                     st.markdown("**LLM + Answer**") 
                     llm = st.radio(
                         "Choose your model:",
-                        ["qwen/qwen3.6-27b", "llama-3.3-70b-versatile", "openai/gpt-oss-120b"],
+                        ["qwen/qwen3.8-27b", "openai/gpt-oss-120b"],
                         key="llm_rag"
                     )
                     system_prompt = st.text_area(label="System prompt:", value=prompt_templates.STAR_WARS_SPECIALIST_RAG.strip(), width=500, height=300, help=help_ui.TEXTO_HELP_RAG_SYSTEM_PROMPT)

@@ -26,12 +26,19 @@ The application offers three main experiences:
 
 ## Requirements
 
-Before you start, make sure you have installed:
+Before you start, make sure you have:
 
-- Python 3.9+ (3.11 recommended)
+- Python 3.11+
 - pip
 - Git
 - A virtual environment (recommended)
+- A local `.env` file
+
+Create the `.env` file from the example and fill in your values:
+
+```bash
+cp .env.example .env
+```
 
 ---
 
